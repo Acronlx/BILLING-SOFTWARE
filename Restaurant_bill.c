@@ -14,7 +14,7 @@ struct orders
 {
     char customer[20];
     char date[50];
-    int numberOfItems;
+    int numOfItems;
     struct items itm[50];
 
 };
@@ -23,7 +23,7 @@ struct orders
 void generateBillHeader(char name[50],char date[30]){
     printf("\n\n");
     printf("\t  RESTAURANT");
-    printf("\n\t  ------------------");
+    printf("\n----------------------------------------");
     printf("\nDate:%s",date);
     printf("\nInvoice TO: %s",name);
     printf("\n");
@@ -38,7 +38,7 @@ void generateBillHeader(char name[50],char date[30]){
 
 void generateBillBody(char item[30], int qty, float price){
     printf("%s\t\t",item);
-    printf("%dd\t\t", qty);
+    printf("%d\t\t", qty);
     printf("%.2f\t\t",qty * price);
     printf("\n");
 
@@ -56,23 +56,26 @@ void generateBillFooter(float total){
     printf("----------------------------------------\n");
     printf("Sub Total\t\t\t%.2f", total);
     printf("\nDiscount @10%s\t\t\t%.2f","%",dis);
-    printf("\n\t\t\t\t--------");
+    printf("\n----------------------------------------");
     printf("\nNet Total \t\t\t%.2f",netTotal);
     printf("\nCGST @9%s\t\t\t%.2f","%",cgst);
     printf("\nSGST @9%s\t\t\t%.2f","%",cgst);
-    printf("----------------------------------------\n");
-    printf("\nGrand Total \t\t\t%.2f","%",grandTotal);
-    printf("----------------------------------------\n");
+    printf("\n----------------------------------------");
+    printf("\nGrand Total \t\t\t%.2f",grandTotal);
+    printf("\n----------------------------------------");
 
 
 }
 
 
 int main(){
+    float total;
     int opt,n;
     struct orders ord;
+    char saveBill = 'y';
+    FILE *fp;
     //Dashboard
-    printf("\t=======================RESTAURANT=======================\n");
+    printf("\t=======================RESTAURANT=======================");
     printf("\n\nPlease select your prefered option");
     printf("\n1.Generate Invoice");
     printf("\n2.Show all Invoices");
@@ -91,7 +94,7 @@ int main(){
         strcpy(ord.date,__DATE__);
         printf("\nPlease enter the number of items:\t");
         scanf("%d",&n);
-        ord.numberOfItems = n;
+        ord.numOfItems = n;
 
         for(int i=0;i<n;i++){
             fgetc(stdin);
@@ -102,10 +105,31 @@ int main(){
             printf("Please enter the quantity:\t");
             scanf("%d",&ord.itm[i].qty);
             printf("Please enter the unit price:\t");
-            scanf("%d",&ord.itm[i].price);
+            scanf("%f",&ord.itm[i].price);
+            total +=ord.itm[i].qty * ord.itm[i].price;  //sum of all the items
         }
 
+        generateBillHeader(ord.customer,ord.date);
+        for(int i=0;i<ord.numOfItems;i++){
+            generateBillBody(ord.itm[i].item,ord.itm[i].qty,ord.itm[i].price);
+        }
 
+        generateBillFooter(total);
+
+        printf("\nDo you want to save the invoice [y/n]:\t");
+        scanf("%s",saveBill);
+
+        if (saveBill == 'y')
+        {
+            fp = fopen("RestaurantBill.dat","a+");
+            fwrite(&ord,sizeof(struct orders),1,fp);
+            if(fwrite != 0){
+                printf("\nSuccessfully Savedd");
+            }
+            else
+            printf("\nERROR SAVING");
+            
+        }
         break;
     }
     
