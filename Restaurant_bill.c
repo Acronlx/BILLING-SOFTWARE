@@ -2,6 +2,7 @@
 #include<string.h>
 #include<stdlib.h>
 
+
 struct items   //Contains multiple datatypes
 {
     char item[20];
@@ -72,9 +73,14 @@ int main(){
     float total;
     int opt,n;
     struct orders ord;
-    char saveBill = 'y';
+    struct orders order;
+    char saveBill = 'y',contFlag = 'y';
+    char name[50];
     FILE *fp;
     //Dashboard
+    while(contFlag == 'y'){
+        float total = 0;
+        int invoicefound = 0;
     printf("\t=======================RESTAURANT=======================");
     printf("\n\nPlease select your prefered option");
     printf("\n1.Generate Invoice");
@@ -88,6 +94,7 @@ int main(){
 
     switch (opt){
         case 1:
+        system("cls");
         printf("Please enter the name of the customer:\t");
         fgets(ord.customer,50,stdin);
         ord.customer[strlen(ord.customer)-1] = 0;
@@ -117,22 +124,85 @@ int main(){
         generateBillFooter(total);
 
         printf("\nDo you want to save the invoice [y/n]:\t");
-        scanf("%s",saveBill);
+        scanf("%s",&saveBill);
 
         if (saveBill == 'y')
         {
             fp = fopen("RestaurantBill.dat","a+");
             fwrite(&ord,sizeof(struct orders),1,fp);
             if(fwrite != 0){
-                printf("\nSuccessfully Savedd");
+                printf("\nSuccessfully Saved");
             }
-            else
-            printf("\nERROR SAVING");
-            
+            else{
+                printf("\nERROR SAVING");
+            }
         }
         break;
+        
+        case 2:
+        system("cls");
+        fp = fopen("RestaurantBill.dat","rb");
+            printf("\n*****Your Previous Invoices*****\n");
+            while(fread(&order,sizeof(struct orders),1,fp))
+            {
+                float tot = 0;
+                generateBillHeader(order.customer,order.date);
+                for(int i=0;i<order.numOfItems;i++){
+                    generateBillBody(order.itm[i].item,order.itm[i].qty,order.itm[i].price);
+                    tot += order.itm[i].qty * order.itm[i].price;
+
+                }
+                generateBillFooter(tot);
+            }
+            fclose(fp);
+        break;
+
+        case 3:
+        printf("\nEnter the name of the customer:\t");
+        //fgetc(stdin);
+        fgets(name,50,stdin);
+        name[strlen(name)-1] = 0;
+        system("cls");
+        fp = fopen("RestaurantBill.dat","rb");
+            printf("\n\t*****Invoice of %s *****\n",name);
+            while (fread(&order ,sizeof(struct orders),1,fp))
+            {
+                float tot = 0;
+                if(!strcmp(order.customer,name)){
+                generateBillHeader(order.customer,order.date);
+                for(int i;i<order.numOfItems;i++){
+                    generateBillBody(order.itm[i].item,order.itm[i].qty,order.itm[i].price);
+                    tot += order.itm[i].qty * order.itm[i].price;
+
+                }
+                generateBillFooter(tot);
+                invoicefound = 1;
+                    
+                }
+                if(!invoicefound){
+                    printf("Sorry the invoice for %s not exist",name);
+                }
+            }
+            fclose(fp);
+        break;
+
+        case 4:
+        printf("\n\t\tHAVE A GOOD DAY!");
+        exit(0);
+        break;
+
+        default:
+        printf("Sorry invalid option");
+        break;
+
+            
+            
+
+        
     }
-    
+    printf("\nDo you want to perform another operation?[y/n]:\t");
+    scanf("%s",&contFlag);
+    }
     printf("\n\n");
     return 0;
 }
